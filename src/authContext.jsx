@@ -1,4 +1,4 @@
-import React, { useReducer } from "react";
+import React, { useReducer, useEffect } from "react";
 import MkdSDK from "./utils/MkdSDK";
 
 export const AuthContext = React.createContext();
@@ -13,12 +13,16 @@ const initialState = {
 const reducer = (state, action) => {
   switch (action.type) {
     case "LOGIN":
+      const { token, role, user } = action.payload;
+
+      localStorage.setItem("authState", JSON.stringify({ token, role, user }));
+
       return {
         ...state,
         isAuthenticated: true,
-        user: action.payload,
-        token: action.payload.token,
-        role: action.payload.role,
+        user,
+        token,
+        role,
       };
     case "LOGOUT":
       localStorage.clear();
@@ -49,32 +53,44 @@ export const tokenExpireError = (dispatch, errorMessage) => {
 const AuthProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
-  React.useEffect(() => {
-    //TODO
-    const token = localStorage.getItem("token");
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (token && user) {
-      const tokenExpirationInSeconds = user.expire_at;
-      const tokenExpirationTime =
-        new Date().getTime() + tokenExpirationInSeconds * 1000;
-      console.log("date", new Date());
-      if (tokenExpirationTime > new Date().getTime()) {
-        console.log("valid");
+  const checkTokenValidity = async () => {
+    try {
+      const response = await Axios.post(
+        "https://reacttask.mkdlabs.com/v2/api/lambda/check",
+        {
+          role: "admin",
+        },
+        {
+          headers: {
+            Authorization: state.token ? `Bearer ${state.token}` : "",
+          },
+        }
+      );
+
+      if (response.status === 200) {
         dispatch({
           type: "LOGIN",
           payload: {
-            token: token,
-            role: user.role,
-            user: user,
+            token: state.token,
+            role: state.role,
+            user: state.user,
           },
         });
-      } else {
-        console.log("expired");
-        localStorage.removeItem("token");
-        localStorage.removeItem("user");
-        dispatch({ type: "LOGOUT" });
       }
+    } catch (error) {
+      tokenExpireError(dispatch, error.message);
     }
+  };
+
+  useEffect(() => {
+    const storedState = localStorage.getItem("authState");
+    if (storedState) {
+      dispatch({
+        type: "LOGIN",
+        payload: JSON.parse(storedState),
+      });
+    }
+    checkTokenValidity();
   }, []);
 
   return (
