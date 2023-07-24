@@ -21,9 +21,10 @@ export default function MkdSDK() {
     };
 
     const header = this.getHeader();
+    console.log(header);
     try {
-      const loginResult = await fetch(this._baseurl + "/v1/api/login", {
-        method: "post",
+      const loginResult = await fetch(this._baseurl + "/v2/api/lambda/login", {
+        method: "POST",
         headers: header,
         body: JSON.stringify(payload),
       });
@@ -32,6 +33,7 @@ export default function MkdSDK() {
 
       if (loginResult.status === 200) {
         localStorage.setItem("token", jsonResponse.token);
+        localStorage.setItem("user", JSON.stringify(jsonResponse));
         return jsonResponse;
       } else {
         throw new Error(jsonResponse.message);
@@ -42,8 +44,9 @@ export default function MkdSDK() {
   };
 
   this.getHeader = function () {
+    const token = localStorage.getItem("token");
     return {
-      Authorization: "Bearer " + localStorage.getItem("token"),
+      "Content-Type": "application/json",
       "x-project": base64Encode,
     };
   };

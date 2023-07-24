@@ -13,7 +13,6 @@ const initialState = {
 const reducer = (state, action) => {
   switch (action.type) {
     case "LOGIN":
-      //TODO
       return {
         ...state,
         isAuthenticated: true,
@@ -52,6 +51,19 @@ const AuthProvider = ({ children }) => {
 
   React.useEffect(() => {
     //TODO
+    const token = localStorage.getItem("token");
+    if (token) {
+      const user = JSON.parse(localStorage.getItem("user"));
+      const tokenExpiration = new Date(user.expire_at);
+
+      if (tokenExpiration > new Date()) {
+        dispatch({ type: "LOGIN", payload: user });
+      } else {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        dispatch({ type: "LOGOUT" });
+      }
+    }
   }, []);
 
   return (
