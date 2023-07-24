@@ -26,8 +26,14 @@ const AdminLoginPage = () => {
   });
 
   const onSubmit = async (data) => {
-    let sdk = new MkdSDK();
-    //TODO
+    try {
+      let sdk = new MkdSDK();
+      const response = await sdk.login(data.email, data.password, "admin");
+      dispatch({ type: "LOGIN", payload: response });
+      navigate("/admin/dashboard");
+    } catch (error) {
+      setError("Authentication", { message: "Invalid email or password" });
+    }
   };
 
   return (
