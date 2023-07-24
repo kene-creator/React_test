@@ -44,7 +44,6 @@ export default function MkdSDK() {
   };
 
   this.getHeader = function () {
-    const token = localStorage.getItem("token");
     return {
       "Content-Type": "application/json",
       "x-project": base64Encode,

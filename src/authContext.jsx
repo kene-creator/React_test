@@ -52,13 +52,24 @@ const AuthProvider = ({ children }) => {
   React.useEffect(() => {
     //TODO
     const token = localStorage.getItem("token");
-    if (token) {
-      const user = JSON.parse(localStorage.getItem("user"));
-      const tokenExpiration = new Date(user.expire_at);
-
-      if (tokenExpiration > new Date()) {
-        dispatch({ type: "LOGIN", payload: user });
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (token && user) {
+      const tokenExpirationInSeconds = user.expire_at;
+      const tokenExpirationTime =
+        new Date().getTime() + tokenExpirationInSeconds * 1000;
+      console.log("date", new Date());
+      if (tokenExpirationTime > new Date().getTime()) {
+        console.log("valid");
+        dispatch({
+          type: "LOGIN",
+          payload: {
+            token: token,
+            role: user.role,
+            user: user,
+          },
+        });
       } else {
+        console.log("expired");
         localStorage.removeItem("token");
         localStorage.removeItem("user");
         dispatch({ type: "LOGOUT" });
