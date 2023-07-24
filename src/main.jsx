@@ -7,7 +7,6 @@ import AdminLoginPage from "./pages/AdminLoginPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 function renderRoutes(role) {
-  console.log(role, "role");
   switch (role) {
     case "admin":
       return (

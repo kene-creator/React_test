@@ -21,7 +21,6 @@ export default function MkdSDK() {
     };
 
     const header = this.getHeader();
-    console.log(header);
     try {
       const loginResult = await fetch(this._baseurl + "/v2/api/lambda/login", {
         method: "POST",

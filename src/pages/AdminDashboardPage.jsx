@@ -110,7 +110,6 @@ const AdminDashboardPage = () => {
       setVideos(response.list);
       setLoading(false);
     } catch (error) {
-      console.error("Error fetching videos:", error);
       setLoading(false);
     }
   };
