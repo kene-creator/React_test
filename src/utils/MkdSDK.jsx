@@ -12,9 +12,33 @@ export default function MkdSDK() {
   this.setTable = function (table) {
     this._table = table;
   };
-  
+
   this.login = async function (email, password, role) {
-    //TODO
+    const payload = {
+      email,
+      password,
+      role,
+    };
+
+    const header = this.getHeader();
+    try {
+      const loginResult = await fetch(this._baseurl + "/v1/api/login", {
+        method: "post",
+        headers: header,
+        body: JSON.stringify(payload),
+      });
+
+      const jsonResponse = await loginResult.json();
+
+      if (loginResult.status === 200) {
+        localStorage.setItem("token", jsonResponse.token);
+        return jsonResponse;
+      } else {
+        throw new Error(jsonResponse.message);
+      }
+    } catch (error) {
+      throw new Error("Login failed.");
+    }
   };
 
   this.getHeader = function () {
@@ -27,7 +51,7 @@ export default function MkdSDK() {
   this.baseUrl = function () {
     return this._baseurl;
   };
-  
+
   this.callRestAPI = async function (payload, method) {
     const header = {
       "Content-Type": "application/json",
@@ -55,7 +79,7 @@ export default function MkdSDK() {
           throw new Error(jsonGet.message);
         }
         return jsonGet;
-      
+
       case "PAGINATE":
         if (!payload.page) {
           payload.page = 1;
@@ -84,10 +108,30 @@ export default function MkdSDK() {
       default:
         break;
     }
-  };  
+  };
 
   this.check = async function (role) {
-    //TODO
+    const header = this.getHeader();
+
+    try {
+      const checkResult = await fetch(this._baseurl + "/v1/api/check", {
+        method: "get",
+        headers: header,
+      });
+
+      if (checkResult.status === 200) {
+        const jsonResponse = await checkResult.json();
+        if (jsonResponse.role === role) {
+          return true;
+        } else {
+          throw new Error("Access denied.");
+        }
+      } else {
+        throw new Error("Failed to check role.");
+      }
+    } catch (error) {
+      throw new Error("Failed to check role.");
+    }
   };
 
   return this;
